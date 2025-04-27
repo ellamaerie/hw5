@@ -13,8 +13,7 @@ using namespace std;
 
 
 // Add prototypes of helper functions here
-std::set<std::string> allCombos(std::string in, std::string floating, size_t index);
-std::set<std::string> validWords(const std::set<std::string>& combos, const std::set<std::string>& dict);
+void allCombos(std::string in, std::string floating, size_t index, std::set<std::string>& results, const set<string>& dict);
 
 // Definition of primary wordle function
 std::set<std::string> wordle(
@@ -23,68 +22,45 @@ std::set<std::string> wordle(
     const std::set<std::string>& dict)
 {
     // Add your code here
-    std::set<std::string> combos = allCombos(in, floating, 0);
-    return validWords(combos, dict);
+    std::set<std::string> results;
+    std::string curr = in;
+    allCombos(curr, floating, 0, results, dict);
+    return results;
 }
 
 // Define any helper functions here
-std::set<std::string> allCombos(std::string in, std::string floating, size_t index){
-  std::set<std::string> results;
-
+void allCombos(std::string in, std::string floating, size_t index, std::set<std::string>& results, const set<string>& dict){
   //base case
   if (index == in.size()){ // max characters
-    if (floating.empty()){ // used all required letters
+    if (floating.empty() && dict.find(in) != dict.end()){ // used all required letters
       results.insert(in);
     }
-    return results;
+    return;
   }
 
   //not editing the fixed character i.e. -i--
   if (in[index] != '-'){
-    return allCombos(in, floating, index + 1);
+    allCombos(in, floating, index + 1, results, dict);
+    return;
   }
 
-// character generation for ---
-  std::set<std::string> temp;
 
-  // use floating first
-  if (in[index] == '-'){
-    for (unsigned int i = 0; i < floating.size(); ++i){
-      std::string newIn;
-      newIn = in;
-      newIn[index] = floating[i];
+  for (size_t i = 0; i < floating.size(); ++i){
+    std::string newFloating = floating;
+    newFloating.erase(i, 1);
 
-      std::string newFloating;
-      newFloating = floating;
-      newFloating.erase(i, 1); //remove used letter
-
-      std::set<std::string> newResults = allCombos(newIn, newFloating, index + 1);
-      temp.insert(newResults.begin(), newResults.end());
-    }
+    in [index] = floating[i];
+    allCombos(in, newFloating, index + 1, results, dict);
   }
 
-  // fill in the rest
   if (floating.size() < (in.size() - index)){
-    for (char c = 'a' ; c <= 'z'; ++c){
-      if (floating.find(c) >= floating.size()){ //
-        std::string newIn = in;
-        newIn[index] = c;
-
-        std::set<std::string> newResults = allCombos(newIn, floating, index + 1); // no edits to floating
-        temp.insert(newResults.begin(), newResults.end());
+    for (char x = 'a'; x <= 'z'; ++x){
+      if (floating.find(x) != string::npos){
+        continue;
       }
+      in[index] = x;
+      allCombos(in, floating, index + 1, results, dict);
     }
   }
-  return temp;
-}
-
-std::set<std::string> validWords(const std::set<std::string> & combos, const std::set<std::string> & dict){
-  std::set<std::string> validOutput;
-
-  for (const std::string& word : combos){
-    if (dict.find(word) != dict.end()){ // look through valid words dictionary
-      validOutput.insert(word);
-    }
-  }
-  return validOutput;
+  in [index] = '-';
 }
